@@ -1,0 +1,20 @@
+{
+  "name": "com.gamewarriors.statemachinesystem",
+  "version": "0.1.0",
+  "displayName": "State Machine System",
+  "description": "This library contain state machine system to manager and execute specific class state",
+  "unity": "2019.1",
+  "unityRelease": "0b5",
+  "dependencies": {
+  },
+  "keywords": [
+    "State Machine",
+    "Game Development",
+    "Unity3d"
+  ],
+  "author": {
+    "name": "Game Warriors",
+    "email": "mahdifada.eddini@outlook.com",
+    "url": "https://www.gamewarriorsstudio.com"
+  }
+}
