@@ -10,6 +10,9 @@ namespace GameWarriors.StateMachineDomain.Core
         public IState CurrnetState { get; private set; }
         public IList<ITransition> StateTransitions { get; private set; }
 
+#if UNITY_2018_4_OR_NEWER
+        [UnityEngine.Scripting.Preserve]
+#endif
         public StateMachineSystem()
         {
             _dataTable = new Dictionary<IState, IList<ITransition>>();
