@@ -16,7 +16,7 @@ namespace GameWarriors.StateMachineDomain.Abstraction
         /// <summary>
         /// Calling on each system update call when the transition bind to active state which state is current state in system.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>returning true if transition should be applied</returns>
         bool TransitionUpdate();
     }
 }
