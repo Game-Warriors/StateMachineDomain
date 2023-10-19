@@ -62,6 +62,8 @@ The “IStateMachine“ abstraction could be used to break the dependency. the �
 ```csharp
 public interface IStateMachine
 {
+    public event Action<IState,IState> OnStateChanged;
+    IState CurrentState { get; }
     void AddState(IState state, params ITransition[] transitions);
     void ForceChangeState(string id);
     void UpdateMachine();
@@ -74,6 +76,9 @@ There are three abstraction which present system features. the “TaskSystem” 
 The state machine system has variant and multiply usage among the project businesses, so may every logic will require its own state machine. each state machine just has one active state. overall, the best practice for state machine is may transient or per scope instance. the state machine library has three main abstractions.
 
 1.  __StateMachineSystem:__ The main Implementation of system, which is States container, update the current state and check its transitions condition to switch to transition target state when the transition condition was met.
+    * OnStateChanged: This is an event callback which is triggered when system change states, the first argument state is old state and second is new state.
+
+    * CurrentState: The current state that already update and running in state machine.
 
     * AddState: Adding new state to state container. the related transitions from this state to another state should pass when adding.
 
@@ -106,6 +111,8 @@ public interface IState
     * TargetState: The target state which will move to when condition was met.
 
     * OnTransitionActivate: Calling each time, when the host state selects as current state, and the state transitions consider in possible transition.
+
+    * OnTransitionDeactivate: Calling each time, when the host state end or exit and current state changed.
 
     * TransitionUpdate: Calling on each system update call when the transition bind to active state which state is current state in system. the system will apply transition and switching to target state when this method return true.
 

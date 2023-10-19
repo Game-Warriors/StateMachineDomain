@@ -13,6 +13,11 @@ namespace GameWarriors.StateMachineDomain.Abstraction
         /// Calling each time, when the host state selects as current state, and the state transitions consider in possible transition.
         /// </summary>
         void OnTransitionActivate();
+
+        /// <summary>
+        /// Calling each time, when the host state end or exit and current state changed.
+        /// </summary>
+        void OnTransitionDeactivate();
         /// <summary>
         /// Calling on each system update call when the transition bind to active state which state is current state in system.
         /// </summary>

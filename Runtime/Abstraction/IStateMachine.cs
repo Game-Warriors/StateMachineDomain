@@ -1,3 +1,5 @@
+using System;
+
 namespace GameWarriors.StateMachineDomain.Abstraction
 {
     /// <summary>
@@ -5,6 +7,14 @@ namespace GameWarriors.StateMachineDomain.Abstraction
     /// </summary>
     public interface IStateMachine
     {
+        /// <summary>
+        /// The event trigger when system change states, the first argument state is old state and second is new state.
+        /// </summary>
+        public event Action<IState,IState> OnStateChanged;
+        /// <summary>
+        /// The current state that already update and running in state machine.
+        /// </summary>
+        IState CurrentState { get; }
         /// <summary>
         /// Adding new state to state container. the related transitions from this state to another state should pass when adding.
         /// </summary>

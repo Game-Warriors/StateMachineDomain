@@ -1,6 +1,6 @@
 {
   "name": "com.gamewarriors.statemachinesystem",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "displayName": "State Machine System",
   "description": "This library contain state machine system to manager and execute specific class state",
   "unity": "2019.1",

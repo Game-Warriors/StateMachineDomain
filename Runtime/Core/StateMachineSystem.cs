@@ -1,6 +1,8 @@
 using GameWarriors.StateMachineDomain.Abstraction;
 using GameWarriors.StateMachineDomain.Data;
+using System;
 using System.Collections.Generic;
+using UnityEngine.UIElements;
 
 namespace GameWarriors.StateMachineDomain.Core
 {
@@ -9,9 +11,10 @@ namespace GameWarriors.StateMachineDomain.Core
     /// </summary>
     public class StateMachineSystem : IStateMachine
     {
-        public readonly Dictionary<string, StateDataItem> _dataTable;
+        public event Action<IState, IState> OnStateChanged;
+        private readonly Dictionary<string, StateDataItem> _dataTable;
 
-        public IState CurrnetState { get; private set; }
+        public IState CurrentState { get; private set; }
         public IList<ITransition> StateTransitions { get; private set; }
 
 #if UNITY_2018_4_OR_NEWER
@@ -24,34 +27,34 @@ namespace GameWarriors.StateMachineDomain.Core
 
         public void AddState(IState state, params ITransition[] transitions)
         {
-            if (CurrnetState == null)
+            if (CurrentState == null)
             {
-                CurrnetState = state;
+                CurrentState = state;
                 StateTransitions = transitions;
+                ActiveTransitions(transitions);
+                state.OnEnterState(null);
+                OnStateChanged?.Invoke(null, state);
             }
             StateDataItem dataItem = new StateDataItem(state, new List<ITransition>(transitions));
-            _dataTable.TryAdd(state.Id, dataItem);
+            _dataTable.Add(state.Id, dataItem);
         }
 
         public void UpdateMachine()
         {
-            if (CurrnetState != null)
+            if (CurrentState != null)
             {
-                CurrnetState.OnStateUpdate();
+                CurrentState.OnStateUpdate();
                 int length = StateTransitions.Count;
                 for (int i = 0; i < length; ++i)
                 {
                     ITransition transition = StateTransitions[i];
                     if (transition.TransitionUpdate())
                     {
-                        IState state = transition.TargetState;
-                        if (state != null)
+                        IState newState = transition.TargetState;
+                        if (newState != null)
                         {
-                            IList<ITransition> transitions = _dataTable[state.Id].Transitions;
-                            ActiveTransitions(transitions);
-                            CurrnetState.OnExitState(state);
-                            state.OnEnterState(CurrnetState);
-                            CurrnetState = state;
+                            DeactiveTransitions(StateTransitions);
+                            ChangeState(CurrentState, newState);
                             return;
                         }
                     }
@@ -74,12 +77,27 @@ namespace GameWarriors.StateMachineDomain.Core
             if (_dataTable.TryGetValue(id, out StateDataItem item))
             {
                 IState newState = item.State;
-                IState oldState = CurrnetState;
-                if (CurrnetState != null)
-                    CurrnetState.OnExitState(newState);
+                DeactiveTransitions(StateTransitions);
+                ChangeState(CurrentState, newState);
+            }
+        }
 
-                CurrnetState = newState;
-                CurrnetState.OnEnterState(oldState);
+        private void ChangeState(IState oldState, IState newState)
+        {
+            IList<ITransition> transitions = _dataTable[newState.Id].Transitions;
+            ActiveTransitions(transitions);
+            CurrentState?.OnExitState(newState);
+            CurrentState = newState;
+            newState.OnEnterState(oldState);
+            OnStateChanged?.Invoke(oldState, newState);
+        }
+
+        private void DeactiveTransitions(IList<ITransition> transitions)
+        {
+            int length = transitions.Count;
+            for (int i = 0;i< length;++i)
+            {
+                transitions[i].OnTransitionDeactivate();
             }
         }
     }
