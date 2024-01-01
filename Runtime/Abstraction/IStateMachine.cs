@@ -22,6 +22,16 @@ namespace GameWarriors.StateMachineDomain.Abstraction
         /// <param name="transitions">all transition which quit from source state</param>
         void AddState(IState state, params ITransition[] transitions);
         /// <summary>
+        /// Clear all states from machine container and clean current state and transition
+        /// </summary>
+        void ClearStateMachine();
+        /// <summary>
+        /// Remove the input state from container, if the input state was the current state changing it randomly to another state from state container.
+        /// </summary>
+        /// <param name="state">the state want to remove</param>
+        /// <returns>return true if the state exist in container and opereation was success</returns>
+        bool RemoveState(IState state);
+        /// <summary>
         /// Force the system to change current state to requested state by state id, regardless of transitions. do noting when couldn't find target state state.
         /// </summary>
         /// <param name="id">target state Id</param>

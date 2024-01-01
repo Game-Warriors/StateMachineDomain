@@ -2,7 +2,6 @@ using GameWarriors.StateMachineDomain.Abstraction;
 using GameWarriors.StateMachineDomain.Data;
 using System;
 using System.Collections.Generic;
-using UnityEngine.UIElements;
 
 namespace GameWarriors.StateMachineDomain.Core
 {
@@ -15,7 +14,7 @@ namespace GameWarriors.StateMachineDomain.Core
         private readonly Dictionary<string, StateDataItem> _dataTable;
 
         public IState CurrentState { get; private set; }
-        public IList<ITransition> StateTransitions { get; private set; }
+        public IList<ITransition> CurrentStateTransitions { get; private set; }
 
 #if UNITY_2018_4_OR_NEWER
         [UnityEngine.Scripting.Preserve]
@@ -30,7 +29,7 @@ namespace GameWarriors.StateMachineDomain.Core
             if (CurrentState == null)
             {
                 CurrentState = state;
-                StateTransitions = transitions;
+                CurrentStateTransitions = transitions;
                 ActiveTransitions(transitions);
                 state.OnEnterState(null);
                 OnStateChanged?.Invoke(null, state);
@@ -44,16 +43,16 @@ namespace GameWarriors.StateMachineDomain.Core
             if (CurrentState != null)
             {
                 CurrentState.OnStateUpdate();
-                int length = StateTransitions.Count;
+                int length = CurrentStateTransitions.Count;
                 for (int i = 0; i < length; ++i)
                 {
-                    ITransition transition = StateTransitions[i];
+                    ITransition transition = CurrentStateTransitions[i];
                     if (transition.TransitionUpdate())
                     {
                         IState newState = transition.TargetState;
                         if (newState != null)
                         {
-                            DeactiveTransitions(StateTransitions);
+                            DeactiveTransitions(CurrentStateTransitions);
                             ChangeState(CurrentState, newState);
                             return;
                         }
@@ -64,7 +63,7 @@ namespace GameWarriors.StateMachineDomain.Core
 
         private void ActiveTransitions(IList<ITransition> transitions)
         {
-            StateTransitions = transitions;
+            CurrentStateTransitions = transitions;
             int length = transitions.Count;
             for (int i = 0; i < length; ++i)
             {
@@ -77,9 +76,16 @@ namespace GameWarriors.StateMachineDomain.Core
             if (_dataTable.TryGetValue(id, out StateDataItem item))
             {
                 IState newState = item.State;
-                DeactiveTransitions(StateTransitions);
+                DeactiveTransitions(CurrentStateTransitions);
                 ChangeState(CurrentState, newState);
             }
+        }
+
+        public void ClearStateMachine()
+        {
+            _dataTable.Clear();
+            CurrentStateTransitions.Clear();
+            CurrentState = null;
         }
 
         private void ChangeState(IState oldState, IState newState)
@@ -99,6 +105,40 @@ namespace GameWarriors.StateMachineDomain.Core
             {
                 transitions[i].OnTransitionDeactivate();
             }
+        }
+
+        public bool RemoveState(IState state)
+        {
+            if (state == null)
+                throw new ArgumentNullException("the input state is invalid");
+
+            bool isRemoved = _dataTable.Remove(state.Id);
+            if ( isRemoved)
+            {
+                foreach (var item in _dataTable.Values)
+                {
+                    int length = item.Transitions?.Count ?? 0;
+                    for (int i = 0; i < length; ++i)
+                    {
+                        if (item.Transitions[i].TargetState == state)
+                        {
+                            item.Transitions.RemoveAt(i);
+                            --i;
+                        }
+                    }
+                }
+
+                if (state == CurrentState)
+                {
+                    foreach (var item in _dataTable.Values)
+                    {
+                        ChangeState(CurrentState, item.State);
+                        break;
+                    }
+                }
+                return true;
+            }
+            return false;
         }
     }
 }

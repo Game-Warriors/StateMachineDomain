@@ -1,3 +1,6 @@
+  version : 0.1.4
+  add new remove specific state and clear all state in machine feature
+
   version : 0.1.3
   adding new event callback for whole state change, fixing event triggering on force state change, adding new deactivate event on transition change
 
